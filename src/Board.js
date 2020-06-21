@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import './Board.css';
+import Piece from './Piece';
 
 const RED = 'red';
 const BLACK = 'black';
@@ -20,35 +21,46 @@ export default class Board extends Component {
 
     this.state = {
       boardState: table,
+      selectedPiece: [-1, -1],
     }
-
-    console.log(table)
 
     this.renderRow = this.renderRow.bind(this);
     this.renderSquare = this.renderSquare.bind(this);
+    this.handleOnClick = this.handleOnClick.bind(this);
+  }
+
+  handleOnClick(rowIndex, squareIndex) {
+    const { selectedPiece } = this.state;
+
+    if (rowIndex === selectedPiece[0] && squareIndex === selectedPiece[1]) {
+      this.setState({
+        selectedPiece: [-1, -1],
+      })
+    } else {
+      this.setState({
+        selectedPiece: [rowIndex, squareIndex],
+      })
+    }
   }
 
   // square is one of [0, 1, 2]
-  renderSquare(square, squareIndex, start) {
+  renderSquare(square, squareIndex, rowIndex, start) {
+    const { selectedPiece } = this.state;
+
     const otherColour = start === RED ? BLACK : RED;
     const colour = squareIndex % 2 === 0 ? start : otherColour;
     
     const className = `${colour} square`;
 
-    let pieceClassName;
-    if (square === 1) {
-      pieceClassName = 'piece red-piece';
-    } else if (square === 2) {
-      pieceClassName = 'piece black-piece';
-    } else {
-      pieceClassName = null;
-    }
+    const selected = rowIndex === selectedPiece[0] && squareIndex === selectedPiece[1];
 
     return (
       <div className={className}>
-        {
-          pieceClassName && <span class={pieceClassName}></span>
-        }
+        <Piece
+          color={square}
+          onClick={() => this.handleOnClick(rowIndex, squareIndex)}
+          selected={selected}
+        />
       </div>
     )
   }
@@ -59,7 +71,7 @@ export default class Board extends Component {
       <div className='board-row'>
         {
           row.map((square, squareIndex) => {
-            return this.renderSquare(square, squareIndex, start);
+            return this.renderSquare(square, squareIndex, rowIndex, start);
           })
         }
       </div>

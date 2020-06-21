@@ -21,21 +21,3 @@
 .black {
   background-color: #7D5D5D;
 }
-
-.piece {
-  height: 40px;
-  width: 40px;
-  background-color: black;
-  border-radius: 50%;
-  display: inline-block;
-  margin-top: 8%;
-  border: 1px solid black;
-}
-
-.red-piece {
-  background-color: #FAE0C5;
-}
-
-.black-piece {
-  background-color: black;
-}
