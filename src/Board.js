@@ -5,15 +5,38 @@ import Piece from './Piece';
 const WHITE = 'white'; // 1
 const BLACK = 'black'; // 2
 
-// TODO
-// * win condition
-// * multiple jump
-// * choose to not jump if available
-
 export default class Board extends Component {
   constructor(props) {
     super(props);
 
+    this.state = {
+      boardState: this.setTable(),
+      selectedPiece: [-1, -1],
+      validMoves: [],
+      turn: 2,
+      blackCount: 12,
+      whiteCount: 12,
+      winner: null,
+      showPassTurn: false,
+    }
+
+    this.setTable = this.setTable.bind(this);
+    this.renderRow = this.renderRow.bind(this);
+    this.renderSquare = this.renderSquare.bind(this);
+    this.handleOnClickPiece = this.handleOnClickPiece.bind(this);
+    this.isValidMove = this.isValidMove.bind(this);
+    this.getValidMoves = this.getValidMoves.bind(this);
+    this.handleOnClickSquare = this.handleOnClickSquare.bind(this);
+    this.changeTurn = this.changeTurn.bind(this);
+    this.resetSelectedPiece = this.resetSelectedPiece.bind(this);
+    this.movePiece = this.movePiece.bind(this);
+    this.isGameOver = this.isGameOver.bind(this);
+    this.displayWinner = this.displayWinner.bind(this);
+    this.resetGame = this.resetGame.bind(this);
+    this.skipTurn = this.skipTurn.bind(this);
+  }
+
+  setTable() {
     let table = new Array(8);
     table[0] = [0, 1, 0, 1, 0, 1, 0, 1];
     table[1] = [1, 0, 1, 0, 1, 0, 1, 0];
@@ -24,29 +47,28 @@ export default class Board extends Component {
     table[6] = [0, 2, 0, 2, 0, 2, 0, 2];
     table[7] = [2, 0, 2, 0, 2, 0, 2, 0];
 
-    this.state = {
-      boardState: table,
-      selectedPiece: [-1, -1],
-      validMoves: [],
-      turn: 2,
-    }
-
-    this.renderRow = this.renderRow.bind(this);
-    this.renderSquare = this.renderSquare.bind(this);
-    this.handleOnClickPiece = this.handleOnClickPiece.bind(this);
-    this.isValidMove = this.isValidMove.bind(this);
-    this.getValidMoves = this.getValidMoves.bind(this);
-    this.handleOnClickSquare = this.handleOnClickSquare.bind(this);
-    this.changeTurn = this.changeTurn.bind(this);
-    this.resetSelectedPiece = this.resetSelectedPiece.bind(this);
-    this.movePiece = this.movePiece.bind(this);
+    return table;
   }
 
   resetSelectedPiece() {
     this.setState({
       selectedPiece: [-1, -1],
       validMoves: [],
+      showPassTurn: false,
     });
+  }
+
+  resetGame() {
+    this.setState({
+      boardState: this.setTable(),
+      selectedPiece: [-1, -1],
+      validMoves: [],
+      turn: 2,
+      blackCount: 12,
+      whiteCount: 12,
+      winner: null,
+      showPassTurn: false,
+    })
   }
 
   isValidMove(rowIndex, squareIndex) {
@@ -57,7 +79,7 @@ export default class Board extends Component {
     ));
   }
 
-  getValidMoves(rowIndex, squareIndex) {
+  getValidMoves(rowIndex, squareIndex, isSubsequent = false) {
     const { boardState, turn } = this.state;
 
     const oppositeTurn = turn === 2 ? 1 : 2;
@@ -85,7 +107,7 @@ export default class Board extends Component {
               squareIndex - 1,
             ],
           })
-        } else if (boardState[rowIndex - 1][squareIndex - 1] === 0) {
+        } else if (boardState[rowIndex - 1][squareIndex - 1] === 0 && !isSubsequent) {
           validMoves.push({
             spot: [
               rowIndex - 1,
@@ -107,7 +129,7 @@ export default class Board extends Component {
               squareIndex + 1,
             ],
           });
-        } else if (boardState[rowIndex - 1][squareIndex + 1] === 0) {
+        } else if (boardState[rowIndex - 1][squareIndex + 1] === 0 && !isSubsequent) {
           validMoves.push({
             spot: [
               rowIndex - 1,
@@ -133,7 +155,7 @@ export default class Board extends Component {
               squareIndex - 1,
             ],
           });
-        } else if (boardState[rowIndex + 1][squareIndex - 1] === 0) {
+        } else if (boardState[rowIndex + 1][squareIndex - 1] === 0 && !isSubsequent) {
           validMoves.push({
             spot: [
               rowIndex + 1,
@@ -155,7 +177,7 @@ export default class Board extends Component {
               squareIndex + 1,
             ],
           });
-        } else if (boardState[rowIndex + 1][squareIndex + 1] === 0) {
+        } else if (boardState[rowIndex + 1][squareIndex + 1] === 0 && !isSubsequent) {
           validMoves.push({
             spot: [
               rowIndex + 1,
@@ -165,12 +187,15 @@ export default class Board extends Component {
         }
       }
     }
-    // console.log(validMoves);
     return validMoves;
   }
 
   handleOnClickPiece(rowIndex, squareIndex, square) {
-    const { selectedPiece, turn } = this.state;
+    const { selectedPiece, turn, showPassTurn } = this.state;
+
+    if (showPassTurn) {
+      return;
+    }
 
     if ((square === 2 && turn === 1) || (square === 1 && turn === 2)) {
       return;
@@ -182,7 +207,7 @@ export default class Board extends Component {
       this.setState({
         selectedPiece: [rowIndex, squareIndex],
         validMoves: this.getValidMoves(rowIndex, squareIndex),
-      })
+      });
     }
   }
 
@@ -193,20 +218,101 @@ export default class Board extends Component {
     this.setState({ turn: nextTurn });
   }
 
+  jumpAgain(rowIndex, squareIndex) {
+    const { boardState, turn } = this.state;
+
+    const oppositeTurn = turn === 2 ? 1 : 2;
+
+    if (turn === 2) {
+      if (rowIndex <= 1) {
+        return false;
+      }
+      if (squareIndex === 0) {
+        return boardState[rowIndex - 1][squareIndex + 1] === oppositeTurn && boardState[rowIndex - 2][squareIndex + 2] === 0;
+      }
+      if (squareIndex === 7) {
+        return boardState[rowIndex - 1][squareIndex - 1] === oppositeTurn && boardState[rowIndex - 2][squareIndex - 2] === 0;
+      }
+      return (boardState[rowIndex - 1][squareIndex + 1] === oppositeTurn && boardState[rowIndex - 2][squareIndex + 2] === 0) ||
+        (boardState[rowIndex - 1][squareIndex - 1] === oppositeTurn && boardState[rowIndex - 2][squareIndex - 2] === 0);
+    }
+
+    if (turn === 1) {
+      if (rowIndex >= 6) {
+        return false;
+      }
+      if (squareIndex === 0) {
+        return boardState[rowIndex + 1][squareIndex + 1] === oppositeTurn && boardState[rowIndex + 2][squareIndex + 2] === 0;
+      }
+      if (squareIndex === 7) {
+        return boardState[rowIndex + 1][squareIndex - 1] === oppositeTurn && boardState[rowIndex + 2][squareIndex - 2] === 0;
+      }
+      return (boardState[rowIndex + 1][squareIndex + 1] === oppositeTurn && boardState[rowIndex + 2][squareIndex + 2] === 0) ||
+        (boardState[rowIndex + 1][squareIndex - 1] === oppositeTurn && boardState[rowIndex + 2][squareIndex - 2] === 0);
+    }
+  }
+
   movePiece(rowIndex, squareIndex, validMove) {
-    const { boardState, selectedPiece, turn } = this.state;
+    const {
+      boardState,
+      selectedPiece,
+      turn,
+      blackCount,
+      whiteCount,
+    } = this.state;
 
     let newBoardState = boardState;
     newBoardState[rowIndex][squareIndex] = turn;
     newBoardState[selectedPiece[0]][selectedPiece[1]] = 0;
 
+    let newBlackCount = blackCount;
+    let newWhiteCount = whiteCount;
+
     if (validMove.toRemove) {
+      const toRemoveNum = newBoardState[validMove.toRemove[0]][validMove.toRemove[1]];
       newBoardState[validMove.toRemove[0]][validMove.toRemove[1]] = 0;
+      if (toRemoveNum === 2) {
+        newBlackCount -= 1;
+      } else if (toRemoveNum === 1) {
+        newWhiteCount -= 1;
+      }
     }
 
     this.setState({
-      boardState: newBoardState
+      boardState: newBoardState,
+      blackCount: newBlackCount,
+      whiteCount: newWhiteCount,
+    });
+
+    if (validMove.toRemove) {
+      return this.jumpAgain(rowIndex, squareIndex);
+    }
+    return false;
+  }
+
+  isGameOver() {
+    const { blackCount, whiteCount } = this.state;
+    if (blackCount === 0) {
+      return WHITE;
+    }
+    if (whiteCount === 0) {
+      return BLACK;
+    }
+    return null;
+  }
+
+  displayWinner(colour) {
+    this.setState({
+      winner: colour,
     })
+  }
+
+  skipTurn() {
+    this.setState({
+      showPassTurn: false,
+    });
+    this.changeTurn();
+    this.resetSelectedPiece();
   }
 
   handleOnClickSquare(rowIndex, squareIndex) {
@@ -218,7 +324,21 @@ export default class Board extends Component {
 
     const validMove = this.isValidMove(rowIndex, squareIndex);
     if (validMove) {
-      this.movePiece(rowIndex, squareIndex, validMove);
+      const winner = this.isGameOver();
+      if (winner) {
+        this.displayWinner(winner);
+      }
+
+      const canJumpAgain = this.movePiece(rowIndex, squareIndex, validMove);
+
+      if (canJumpAgain) {
+        this.setState({
+          showPassTurn: true,
+          selectedPiece: [rowIndex, squareIndex],
+          validMoves: this.getValidMoves(rowIndex, squareIndex),
+        });
+        return;
+      }
       this.changeTurn();
       this.resetSelectedPiece();
     }
@@ -267,10 +387,15 @@ export default class Board extends Component {
   }
 
   render() {
-    const { boardState, turn } = this.state;
+    const {
+      boardState,
+      turn,
+      winner,
+      showPassTurn,
+    } = this.state;
 
     return (
-      <div>
+      <div id='main-div'>
         <div id='main-board'>
           {
             boardState.map((row, rowIndex) => {
@@ -279,6 +404,15 @@ export default class Board extends Component {
           }
         </div>
         <p id='turn'>Turn: {turn === 1 ? WHITE : BLACK}</p>
+        {showPassTurn && (
+          <button onClick={this.skipTurn}>Pass turn</button>
+        )}
+        {winner && (
+          <div>
+            <h2>Game over: {winner} wins!</h2>
+            <button onClick={this.resetGame}>Reset</button>
+          </div>
+        )}
       </div>
     );
   }
