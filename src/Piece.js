@@ -1,13 +1,11 @@
 import React from 'react';
 import './Piece.css';
 
-export default function Piece({ color, selected, onClick }) {
-  if (color === 0) return null;
-  
+export default function Piece({ colour, selected, onClick }) {  
   let pieceClassName;
-  if (color === 1) {
+  if (colour === 1) {
     pieceClassName = 'piece red-piece';
-  } else if (color === 2) {
+  } else if (colour === 2) {
     pieceClassName = 'piece black-piece';
   }
 
@@ -15,5 +13,5 @@ export default function Piece({ color, selected, onClick }) {
     pieceClassName += ' selected';
   }
 
-  return <span class={pieceClassName} onClick={onClick} />;
+  return <span className={pieceClassName} onClick={onClick} />;
 }

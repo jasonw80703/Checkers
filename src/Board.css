@@ -14,10 +14,15 @@
   opacity: 75%;
 }
 
-.red {
+.white {
   background-color: #EDD6C9;
 }
 
 .black {
   background-color: #7D5D5D;
+}
+
+#turn {
+  margin-top: 2%;
+  text-align: center;
 }
