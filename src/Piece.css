@@ -1,7 +1,6 @@
 .piece {
   height: 40px;
   width: 40px;
-  background-color: black;
   border-radius: 50%;
   line-height: 40px;
   display: inline-block;
@@ -9,7 +8,7 @@
   border: 1px solid black;
 }
 
-.red-piece {
+.white-piece {
   background-color: #FAE0C5;
   color: black;
 }
@@ -19,7 +18,7 @@
   color: white;
 }
 
-.red-king {
+.white-king {
   background-color: #FAE0C5;
   color: black;
 }

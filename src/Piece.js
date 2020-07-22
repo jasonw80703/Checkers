@@ -4,11 +4,11 @@ import './Piece.css';
 export default function Piece({ colour, selected, onClick }) {
   let pieceClassName;
   if (colour === 1) {
-    pieceClassName = 'piece red-piece';
+    pieceClassName = 'piece white-piece';
   } else if (colour === 2) {
     pieceClassName = 'piece black-piece';
   } else if (colour === 3) {
-    pieceClassName = 'piece red-king';
+    pieceClassName = 'piece white-king';
   } else if (colour === 4) {
     pieceClassName = 'piece black-king';
   }

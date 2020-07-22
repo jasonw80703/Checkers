@@ -547,6 +547,8 @@ export default class Board extends Component {
       turn,
       winner,
       showPassTurn,
+      blackCount,
+      whiteCount,
     } = this.state;
 
     return (
@@ -558,10 +560,27 @@ export default class Board extends Component {
             })
           }
         </div>
-        <p id='turn'>Turn: {turn === 1 ? WHITE : BLACK}</p>
+        <p id='turn'><b>Turn:</b> {turn === 1 ? WHITE : BLACK}</p>
         {showPassTurn && (
           <button onClick={this.skipTurn}>Pass turn</button>
         )}
+        <div>
+          <p><b>Pieces taken:</b></p>
+          <div>
+            {
+              [...Array(12 - blackCount)].map((_i) => (
+                <span className="black-piece-taken" />
+              ))
+            }
+          </div>
+          <div>
+            {
+              [...Array(12 - whiteCount)].map((_i) => (
+                <span className="white-piece-taken" />
+              ))
+            }
+          </div>
+        </div>
         {winner && (
           <div>
             <h2>Game over: {winner} wins!</h2>
