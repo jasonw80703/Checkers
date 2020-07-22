@@ -418,7 +418,7 @@ export default class Board extends Component {
     let newBoardState = boardState;
     let currentPiece = boardState[selectedPiece[0]][selectedPiece[1]];
     if (turn === 2) {
-      if (validMove.toRemove && currentPiece === 6) { // if jester
+      if (validMove.toRemove && currentPiece === 6) { // if imposter
         currentPiece = 4;
       } else if (rowIndex === 0 && currentPiece === 8) { // if medic
         for (let i = 0; i < 7; i += 2) {
@@ -433,9 +433,9 @@ export default class Board extends Component {
         currentPiece = 4;
       }
     } else if (turn === 1) {
-      if (rowIndex === 7 || (validMove.toRemove && currentPiece === 5)) { // if jester
+      if (rowIndex === 7 || (validMove.toRemove && currentPiece === 5)) { // if imposter
         currentPiece = 3;
-      } else if (rowIndex === 7 && currentPiece === 7) {
+      } else if (rowIndex === 7 && currentPiece === 7) { // if medic
         for (let i = 0; i < 7; i += 2) {
           if (newBoardState[0][i] === 0) {
             newBoardState[0][i] = 1;
@@ -629,7 +629,7 @@ export default class Board extends Component {
                 <li>Pieces move diagonally towards the opponent.</li>
                 <li>Capture pieces by jumping over them diagonally. This can be done multiple times.</li>
                 <li>A piece that reaches the last row becomes a <b>King Piece</b>, which can move in all diagonal directions. King Pieces are marked with K.</li>
-                <li><b>Jester Pieces</b> are special pieces that become a King Piece upon capturing another piece. Jester Pieces are marked with J.</li>
+                <li><b>Imposter Pieces</b> are special pieces that become a King Piece upon capturing another piece. Imposter Pieces are marked with I.</li>
                 <li><b>Medic Pieces</b> are special pieces that upon reaching the last row, restores a captured piece to the starting row if available, and then becomes a King Piece. Medic Pieces are marked with M.</li>
               </ul>
             </div>

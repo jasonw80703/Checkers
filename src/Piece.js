@@ -20,7 +20,7 @@ export default function Piece({ colour, selected, onClick }) {
   if (colour === 3 || colour === 4) {
     return <span className={pieceClassName} onClick={onClick}>K</span>;
   } else if (colour === 5 || colour === 6) {
-    return <span className={pieceClassName} onClick={onClick}>J</span>;
+    return <span className={pieceClassName} onClick={onClick}>I</span>;
   } else if (colour === 7 || colour === 8) {
     return <span className={pieceClassName} onClick={onClick}>M</span>;
   } else {
