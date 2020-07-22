@@ -39,14 +39,14 @@ export default class Board extends Component {
 
   setTable() {
     let table = new Array(8);
-    table[0] = [0, 1, 0, 1, 0, 1, 0, 1];
+    table[0] = [0, 5, 0, 5, 0, 5, 0, 5];
     table[1] = [1, 0, 1, 0, 1, 0, 1, 0];
     table[2] = [0, 1, 0, 1, 0, 1, 0, 1];
     table[3] = new Array(8).fill(0);
     table[4] = new Array(8).fill(0);
     table[5] = [2, 0, 2, 0, 2, 0, 2, 0];
     table[6] = [0, 2, 0, 2, 0, 2, 0, 2];
-    table[7] = [2, 0, 2, 0, 2, 0, 2, 0];
+    table[7] = [6, 0, 6, 0, 6, 0, 6, 0];
 
     return table;
   }
@@ -406,10 +406,14 @@ export default class Board extends Component {
 
     let newBoardState = boardState;
     let currentPiece = boardState[selectedPiece[0]][selectedPiece[1]];
-    if (turn === 2 && rowIndex === 0) {
-      currentPiece = 4;
-    } else if (turn === 1 && rowIndex === 7) {
-      currentPiece = 3;
+    if (turn === 2) {
+      if (rowIndex === 0 || (validMove.toRemove && currentPiece === 6)) {
+        currentPiece = 4;
+      }
+    } else if (turn === 1) {
+      if (rowIndex === 7 || (validMove.toRemove && currentPiece === 5)) {
+        currentPiece = 4;
+      }
     }
     newBoardState[rowIndex][squareIndex] = currentPiece;
     newBoardState[selectedPiece[0]][selectedPiece[1]] = 0;

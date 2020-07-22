@@ -7,9 +7,9 @@ export default function Piece({ colour, selected, onClick }) {
     pieceClassName = 'piece white-piece';
   } else if (colour === 2) {
     pieceClassName = 'piece black-piece';
-  } else if (colour === 3) {
+  } else if (colour === 3 || colour === 5) {
     pieceClassName = 'piece white-king';
-  } else if (colour === 4) {
+  } else if (colour === 4 || colour === 6) {
     pieceClassName = 'piece black-king';
   }
 
@@ -17,8 +17,11 @@ export default function Piece({ colour, selected, onClick }) {
     pieceClassName += ' selected';
   }
 
-  return (colour > 2 ?
-    <span className={pieceClassName} onClick={onClick}>K</span> :
-    <span className={pieceClassName} onClick={onClick} />
-  );
+  if (colour === 3 || colour === 4) {
+    return <span className={pieceClassName} onClick={onClick}>K</span>;
+  } else if (colour === 5 || colour === 6) {
+    return <span className={pieceClassName} onClick={onClick}>J</span>;
+  } else {
+    return <span className={pieceClassName} onClick={onClick} />;
+  }
 }
