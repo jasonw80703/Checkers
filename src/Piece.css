@@ -3,6 +3,7 @@
   width: 40px;
   background-color: black;
   border-radius: 50%;
+  line-height: 40px;
   display: inline-block;
   margin-top: 8%;
   border: 1px solid black;
@@ -10,10 +11,22 @@
 
 .red-piece {
   background-color: #FAE0C5;
+  color: black;
 }
 
 .black-piece {
   background-color: black;
+  color: white;
+}
+
+.red-king {
+  background-color: #FAE0C5;
+  color: black;
+}
+
+.black-king {
+  background-color: black;
+  color: white;
 }
 
 .selected {

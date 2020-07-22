@@ -18,6 +18,7 @@ export default class Board extends Component {
       whiteCount: 12,
       winner: null,
       showPassTurn: false,
+      gameOver: false,
     }
 
     this.setTable = this.setTable.bind(this);
@@ -68,6 +69,7 @@ export default class Board extends Component {
       whiteCount: 12,
       winner: null,
       showPassTurn: false,
+      gameOver: false,
     })
   }
 
@@ -82,11 +84,57 @@ export default class Board extends Component {
   getValidMoves(rowIndex, squareIndex, isSubsequent = false) {
     const { boardState, turn } = this.state;
 
-    const oppositeTurn = turn === 2 ? 1 : 2;
-
     let validMoves = [];
-    
+
     if (turn === 2) { // move up
+      if (boardState[rowIndex][squareIndex] === 4 && rowIndex !== 7) { // black king
+        // dont add move down right option if far left
+        if (squareIndex !== 0) {
+          const dl = boardState[rowIndex + 1][squareIndex - 1];
+          if (rowIndex <= 5 && dl !== 0 && dl % 2 === 1 && boardState[rowIndex + 2][squareIndex - 2] === 0) {
+            validMoves.push({
+              spot: [
+                rowIndex + 2,
+                squareIndex - 2,
+              ],
+              toRemove: [
+                rowIndex + 1,
+                squareIndex - 1,
+              ],
+            });
+          } else if (dl === 0 && !isSubsequent) {
+            validMoves.push({
+              spot: [
+                rowIndex + 1,
+                squareIndex - 1,
+              ],
+            });
+          }
+        }
+        // dont add move down left option if far right
+        if (squareIndex !== 7) {
+          const dr = boardState[rowIndex + 1][squareIndex + 1];
+          if (rowIndex <= 5 && dr !== 0 && dr % 2 === 1 && boardState[rowIndex + 2][squareIndex + 2] === 0) {
+            validMoves.push({
+              spot: [
+                rowIndex + 2,
+                squareIndex + 2,
+              ],
+              toRemove: [
+                rowIndex + 1,
+                squareIndex + 1,
+              ],
+            });
+          } else if (dr === 0 && !isSubsequent) {
+            validMoves.push({
+              spot: [
+                rowIndex + 1,
+                squareIndex + 1,
+              ],
+            });
+          }
+        }
+      }
       if (rowIndex === 0) { // if at board end
         return validMoves;
       }
@@ -96,7 +144,7 @@ export default class Board extends Component {
         // * at least two rows above current row
         // * piece to jump is opposite player's
         // * spot to jump to is empty
-        if (rowIndex >= 2 && boardState[rowIndex - 1][squareIndex - 1] === oppositeTurn && boardState[rowIndex - 2][squareIndex - 2] === 0) {
+        if (rowIndex >= 2 && boardState[rowIndex - 1][squareIndex - 1] % 2 === 1 && boardState[rowIndex - 2][squareIndex - 2] === 0) {
           validMoves.push({
             spot: [
               rowIndex - 2,
@@ -118,7 +166,7 @@ export default class Board extends Component {
       }
       // dont add move up right option if far right
       if (squareIndex !== 7) {
-        if (rowIndex >= 2 && boardState[rowIndex - 1][squareIndex + 1] === oppositeTurn && boardState[rowIndex - 2][squareIndex + 2] === 0) {
+        if (rowIndex >= 2 && boardState[rowIndex - 1][squareIndex + 1] % 2 === 1 && boardState[rowIndex - 2][squareIndex + 2] === 0) {
           validMoves.push({
             spot: [
               rowIndex - 2,
@@ -139,12 +187,65 @@ export default class Board extends Component {
         }
       }
     } else if (turn === 1) { // move down
+      if (boardState[rowIndex][squareIndex] === 3 && rowIndex !== 0) { // white king
+        // dont add move up left option if far left
+        if (squareIndex !== 0) {
+          // valid jump if
+          // * at least two rows above current row
+          // * piece to jump is opposite player's
+          // * spot to jump to is empty
+          const ul = boardState[rowIndex - 1][squareIndex - 1];
+          if (rowIndex >= 2 && ul !== 0 && ul % 2 === 0 && boardState[rowIndex - 2][squareIndex - 2] === 0) {
+            validMoves.push({
+              spot: [
+                rowIndex - 2,
+                squareIndex - 2
+              ],
+              toRemove: [
+                rowIndex - 1,
+                squareIndex - 1,
+              ],
+            })
+          } else if (ul === 0 && !isSubsequent) {
+            validMoves.push({
+              spot: [
+                rowIndex - 1,
+                squareIndex - 1,
+              ],
+            });
+          }
+        }
+        // dont add move up right option if far right
+        if (squareIndex !== 7) {
+          const ur = boardState[rowIndex - 1][squareIndex + 1];
+          if (rowIndex >= 2 && ur !== 0 && ur % 2 === 0 && boardState[rowIndex - 2][squareIndex + 2] === 0) {
+            validMoves.push({
+              spot: [
+                rowIndex - 2,
+                squareIndex + 2,
+              ],
+              toRemove: [
+                rowIndex - 1,
+                squareIndex + 1,
+              ],
+            });
+          } else if (ur === 0 && !isSubsequent) {
+            validMoves.push({
+              spot: [
+                rowIndex - 1,
+                squareIndex + 1,
+              ],
+            });
+          }
+        }
+      }
       if (rowIndex === 7) { // if at board end
         return validMoves;
       }
       // dont add move down right option if far left
       if (squareIndex !== 0) {
-        if (rowIndex <= 5 && boardState[rowIndex + 1][squareIndex - 1] === oppositeTurn && boardState[rowIndex + 2][squareIndex - 2] === 0) {
+        const dl = boardState[rowIndex + 1][squareIndex - 1];
+        if (rowIndex <= 5 && dl !== 0 && dl % 2 === 0 && boardState[rowIndex + 2][squareIndex - 2] === 0) {
           validMoves.push({
             spot: [
               rowIndex + 2,
@@ -155,7 +256,7 @@ export default class Board extends Component {
               squareIndex - 1,
             ],
           });
-        } else if (boardState[rowIndex + 1][squareIndex - 1] === 0 && !isSubsequent) {
+        } else if (dl === 0 && !isSubsequent) {
           validMoves.push({
             spot: [
               rowIndex + 1,
@@ -166,7 +267,8 @@ export default class Board extends Component {
       }
       // dont add move down left option if far right
       if (squareIndex !== 7) {
-        if (rowIndex <= 5 && boardState[rowIndex + 1][squareIndex + 1] === oppositeTurn && boardState[rowIndex + 2][squareIndex + 2] === 0) {
+        const dr = boardState[rowIndex + 1][squareIndex + 1];
+        if (rowIndex <= 5 && dr !== 0 && dr % 2 === 0 && boardState[rowIndex + 2][squareIndex + 2] === 0) {
           validMoves.push({
             spot: [
               rowIndex + 2,
@@ -177,7 +279,7 @@ export default class Board extends Component {
               squareIndex + 1,
             ],
           });
-        } else if (boardState[rowIndex + 1][squareIndex + 1] === 0 && !isSubsequent) {
+        } else if (dr === 0 && !isSubsequent) {
           validMoves.push({
             spot: [
               rowIndex + 1,
@@ -187,17 +289,22 @@ export default class Board extends Component {
         }
       }
     }
+    console.log(validMoves);
     return validMoves;
   }
 
   handleOnClickPiece(rowIndex, squareIndex, square) {
-    const { selectedPiece, turn, showPassTurn } = this.state;
+    const { selectedPiece, turn, showPassTurn, gameOver } = this.state;
+
+    if (gameOver) {
+      return;
+    }
 
     if (showPassTurn) {
       return;
     }
 
-    if ((square === 2 && turn === 1) || (square === 1 && turn === 2)) {
+    if ((square % 2 === 0 && turn === 1) || (square % 2 === 1 && turn === 2)) {
       return;
     }
 
@@ -218,37 +325,73 @@ export default class Board extends Component {
     this.setState({ turn: nextTurn });
   }
 
-  jumpAgain(rowIndex, squareIndex) {
+  jumpAgain(rowIndex, squareIndex, currentPiece) {
     const { boardState, turn } = this.state;
 
-    const oppositeTurn = turn === 2 ? 1 : 2;
-
     if (turn === 2) {
+      if (currentPiece === 4 && rowIndex <= 5) { // down jumps
+        const dr = boardState[rowIndex + 1][squareIndex + 1];
+        const dl = boardState[rowIndex + 1][squareIndex - 1];
+        if (squareIndex === 0) {
+          if (dr !== 0 && dr % 2 === 1 && boardState[rowIndex + 2][squareIndex + 2] === 0) {
+            return true;
+          }
+        }
+        if (squareIndex === 7) {
+          if (dl !== 0 && dl % 2 === 1 && boardState[rowIndex + 2][squareIndex - 2] === 0) {
+            return true;
+          }
+        }
+        if ((dr !== 0 && dr % 2 === 1 && boardState[rowIndex + 2][squareIndex + 2] === 0) ||
+          (dl !== 0 && dl % 2 === 1 && boardState[rowIndex + 2][squareIndex - 2] === 0)) {
+          return true;
+        }
+      }
       if (rowIndex <= 1) {
         return false;
       }
       if (squareIndex === 0) {
-        return boardState[rowIndex - 1][squareIndex + 1] === oppositeTurn && boardState[rowIndex - 2][squareIndex + 2] === 0;
+        return boardState[rowIndex - 1][squareIndex + 1] % 2 === 1 && boardState[rowIndex - 2][squareIndex + 2] === 0;
       }
       if (squareIndex === 7) {
-        return boardState[rowIndex - 1][squareIndex - 1] === oppositeTurn && boardState[rowIndex - 2][squareIndex - 2] === 0;
+        return boardState[rowIndex - 1][squareIndex - 1] % 2 === 1 && boardState[rowIndex - 2][squareIndex - 2] === 0;
       }
-      return (boardState[rowIndex - 1][squareIndex + 1] === oppositeTurn && boardState[rowIndex - 2][squareIndex + 2] === 0) ||
-        (boardState[rowIndex - 1][squareIndex - 1] === oppositeTurn && boardState[rowIndex - 2][squareIndex - 2] === 0);
+      return (boardState[rowIndex - 1][squareIndex + 1] % 2 === 1 && boardState[rowIndex - 2][squareIndex + 2] === 0) ||
+        (boardState[rowIndex - 1][squareIndex - 1] % 2 === 1 && boardState[rowIndex - 2][squareIndex - 2] === 0);
     }
 
     if (turn === 1) {
+      if (currentPiece === 3 && rowIndex >= 2) { // up jumps
+        const ur = boardState[rowIndex - 1][squareIndex + 1];
+        const ul = boardState[rowIndex - 1][squareIndex - 1];
+        if (squareIndex === 0) {
+          if (ur !== 0 && ur % 2 === 0 && boardState[rowIndex - 2][squareIndex + 2] === 0) {
+            return true;
+          }
+        }
+        if (squareIndex === 7) {
+          if (ul !== 0 && ul % 2 === 0 && boardState[rowIndex - 2][squareIndex - 2] === 0) {
+            return true;
+          }
+        }
+        if ((ur !== 0 && ur % 2 === 0 && boardState[rowIndex - 2][squareIndex + 2] === 0) ||
+          (ul !== 0 && ul % 2 === 0 && boardState[rowIndex - 2][squareIndex - 2] === 0)) {
+          return true;
+        }
+      }
       if (rowIndex >= 6) {
         return false;
       }
+      const dr = boardState[rowIndex + 1][squareIndex + 1];
+      const dl = boardState[rowIndex + 1][squareIndex - 1];
       if (squareIndex === 0) {
-        return boardState[rowIndex + 1][squareIndex + 1] === oppositeTurn && boardState[rowIndex + 2][squareIndex + 2] === 0;
+        return dr !== 0 && dr % 2 === 0 && boardState[rowIndex + 2][squareIndex + 2] === 0;
       }
       if (squareIndex === 7) {
-        return boardState[rowIndex + 1][squareIndex - 1] === oppositeTurn && boardState[rowIndex + 2][squareIndex - 2] === 0;
+        return dl !== 0 && dl % 2 === 0 && boardState[rowIndex + 2][squareIndex - 2] === 0;
       }
-      return (boardState[rowIndex + 1][squareIndex + 1] === oppositeTurn && boardState[rowIndex + 2][squareIndex + 2] === 0) ||
-        (boardState[rowIndex + 1][squareIndex - 1] === oppositeTurn && boardState[rowIndex + 2][squareIndex - 2] === 0);
+      return (dr !== 0 && dr % 2 === 0 && boardState[rowIndex + 2][squareIndex + 2] === 0) ||
+        (dl !== 0 && dl % 2 === 0 && boardState[rowIndex + 2][squareIndex - 2] === 0);
     }
   }
 
@@ -262,7 +405,13 @@ export default class Board extends Component {
     } = this.state;
 
     let newBoardState = boardState;
-    newBoardState[rowIndex][squareIndex] = turn;
+    let currentPiece = boardState[selectedPiece[0]][selectedPiece[1]];
+    if (turn === 2 && rowIndex === 0) {
+      currentPiece = 4;
+    } else if (turn === 1 && rowIndex === 7) {
+      currentPiece = 3;
+    }
+    newBoardState[rowIndex][squareIndex] = currentPiece;
     newBoardState[selectedPiece[0]][selectedPiece[1]] = 0;
 
     let newBlackCount = blackCount;
@@ -285,7 +434,7 @@ export default class Board extends Component {
     });
 
     if (validMove.toRemove) {
-      return this.jumpAgain(rowIndex, squareIndex);
+      return this.jumpAgain(rowIndex, squareIndex, currentPiece);
     }
     return false;
   }
@@ -304,6 +453,7 @@ export default class Board extends Component {
   displayWinner(colour) {
     this.setState({
       winner: colour,
+      gameOver: true,
     })
   }
 
@@ -316,7 +466,11 @@ export default class Board extends Component {
   }
 
   handleOnClickSquare(rowIndex, squareIndex) {
-    const { selectedPiece } = this.state;
+    const { selectedPiece, gameOver } = this.state;
+
+    if (gameOver) {
+      return;
+    }
 
     if (selectedPiece[0] === -1) {
       return;
@@ -327,6 +481,7 @@ export default class Board extends Component {
       const winner = this.isGameOver();
       if (winner) {
         this.displayWinner(winner);
+        return;
       }
 
       const canJumpAgain = this.movePiece(rowIndex, squareIndex, validMove);
@@ -335,7 +490,7 @@ export default class Board extends Component {
         this.setState({
           showPassTurn: true,
           selectedPiece: [rowIndex, squareIndex],
-          validMoves: this.getValidMoves(rowIndex, squareIndex),
+          validMoves: this.getValidMoves(rowIndex, squareIndex, true),
         });
         return;
       }
@@ -344,7 +499,7 @@ export default class Board extends Component {
     }
   }
 
-  // square is one of [0, 1, 2]
+  // square is one of [0, 1, 2, 3, 4]
   renderSquare(square, squareIndex, rowIndex, start) {
     const { selectedPiece } = this.state;
 
