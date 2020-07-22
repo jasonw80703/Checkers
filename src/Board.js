@@ -19,6 +19,7 @@ export default class Board extends Component {
       winner: null,
       showPassTurn: false,
       gameOver: false,
+      showHelp: false,
     }
 
     this.setTable = this.setTable.bind(this);
@@ -35,18 +36,19 @@ export default class Board extends Component {
     this.displayWinner = this.displayWinner.bind(this);
     this.resetGame = this.resetGame.bind(this);
     this.skipTurn = this.skipTurn.bind(this);
+    this.toggleHelp = this.toggleHelp.bind(this);
   }
 
   setTable() {
     let table = new Array(8);
-    table[0] = [0, 5, 0, 5, 0, 5, 0, 5];
+    table[0] = [0, 7, 0, 5, 0, 5, 0, 7];
     table[1] = [1, 0, 1, 0, 1, 0, 1, 0];
     table[2] = [0, 1, 0, 1, 0, 1, 0, 1];
     table[3] = new Array(8).fill(0);
     table[4] = new Array(8).fill(0);
     table[5] = [2, 0, 2, 0, 2, 0, 2, 0];
     table[6] = [0, 2, 0, 2, 0, 2, 0, 2];
-    table[7] = [6, 0, 6, 0, 6, 0, 6, 0];
+    table[7] = [8, 0, 6, 0, 6, 0, 8, 0];
 
     return table;
   }
@@ -70,6 +72,12 @@ export default class Board extends Component {
       winner: null,
       showPassTurn: false,
       gameOver: false,
+    })
+  }
+
+  toggleHelp() {
+    this.setState({
+      showHelp: !this.state.showHelp,
     })
   }
 
@@ -407,11 +415,31 @@ export default class Board extends Component {
     let newBoardState = boardState;
     let currentPiece = boardState[selectedPiece[0]][selectedPiece[1]];
     if (turn === 2) {
-      if (rowIndex === 0 || (validMove.toRemove && currentPiece === 6)) {
+      if (validMove.toRemove && currentPiece === 6) { // if jester
+        currentPiece = 4;
+      } else if (rowIndex === 0 && currentPiece === 8) { // if medic
+        for (let i = 0; i < 7; i += 2) {
+          if (newBoardState[7][i] === 0) {
+            newBoardState[7][i] = 2;
+            break;
+          }
+        }
+        currentPiece = 4;
+      } else if (rowIndex === 0) {
         currentPiece = 4;
       }
     } else if (turn === 1) {
-      if (rowIndex === 7 || (validMove.toRemove && currentPiece === 5)) {
+      if (rowIndex === 7 || (validMove.toRemove && currentPiece === 5)) { // if jester
+        currentPiece = 4;
+      } else if (rowIndex === 7 && currentPiece === 7) {
+        for (let i = 0; i < 7; i += 2) {
+          if (newBoardState[0][i] === 0) {
+            newBoardState[0][i] = 1;
+            break;
+          }
+        }
+        currentPiece = 4;
+      } else if (rowIndex === 7) {
         currentPiece = 4;
       }
     }
@@ -535,7 +563,7 @@ export default class Board extends Component {
   renderRow(row, rowIndex) {
     const start = rowIndex % 2 === 0 ? 'white' : 'black';
     return (
-      <div className='board-row' key={`row${rowIndex}`}>
+      <div key={`row${rowIndex}`}>
         {
           row.map((square, squareIndex) => {
             return this.renderSquare(square, squareIndex, rowIndex, start);
@@ -553,45 +581,59 @@ export default class Board extends Component {
       showPassTurn,
       blackCount,
       whiteCount,
+      showHelp,
     } = this.state;
 
     return (
-      <div id='main-div'>
-        <div id='main-board'>
-          {
-            boardState.map((row, rowIndex) => {
-              return this.renderRow(row, rowIndex);
-            })
-          }
+      <div className='container'>
+        <div className='row'>
+          <div id='main-board'>
+            {
+              boardState.map((row, rowIndex) => {
+                return this.renderRow(row, rowIndex);
+              })
+            }
+          </div>
         </div>
         <p id='turn'><b>Turn:</b> {turn === 1 ? WHITE : BLACK}</p>
         {showPassTurn && (
-          <button onClick={this.skipTurn}>Pass turn</button>
+          <button type="button" className="btn btn-secondary" onClick={this.skipTurn}>Pass turn</button>
         )}
+        <p><b>Pieces captured:</b></p>
         <div>
-          <p><b>Pieces taken:</b></p>
-          <div>
-            {
-              [...Array(12 - blackCount)].map((_i) => (
-                <span className="black-piece-taken" />
-              ))
-            }
-          </div>
-          <div>
-            {
-              [...Array(12 - whiteCount)].map((_i) => (
-                <span className="white-piece-taken" />
-              ))
-            }
-          </div>
+          {
+            [...Array(12 - blackCount)].map((_i) => (
+              <span className="black-piece-taken" />
+            ))
+          }
+          {
+            [...Array(12 - whiteCount)].map((_i) => (
+              <span className="white-piece-taken" />
+            ))
+          }
         </div>
         {winner && (
           <div>
             <h2>Game over: {winner} wins!</h2>
-            <button onClick={this.resetGame}>Reset</button>
+            <button type="button" className="btn btn-secondary" onClick={this.resetGame}>Reset</button>
+          </div>
+        )}
+        <button type="button" className="btn btn-sm btn-info" onClick={this.toggleHelp}>Help</button>
+        {showHelp && (
+          <div className='card mt-2 mb-3'>
+            <div className='card-body'>
+              <ul>
+                <li>Black plays first.</li>
+                <li>Pieces move diagonally towards the opponent.</li>
+                <li>Capture pieces by jumping over them diagonally. This can be done multiple times.</li>
+                <li>A piece that reaches the last row becomes a <b>King Piece</b>, which can move in all diagonal directions. King Pieces are marked with K.</li>
+                <li><b>Jester Pieces</b> are special pieces that become a King Piece upon capturing another piece. Jester Pieces are marked with J.</li>
+                <li><b>Medic Pieces</b> are special pieces that upon reaching the last row, restores a captured piece to the starting row if available, and then becomes a King Piece. Medic Pieces are marked with M.</li>
+              </ul>
+            </div>
           </div>
         )}
       </div>
-    );
+    )
   }
 }
