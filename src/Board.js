@@ -72,6 +72,7 @@ export default class Board extends Component {
       winner: null,
       showPassTurn: false,
       gameOver: false,
+      showHelp: false,
     })
   }
 
@@ -297,7 +298,6 @@ export default class Board extends Component {
         }
       }
     }
-    console.log(validMoves);
     return validMoves;
   }
 
@@ -412,6 +412,9 @@ export default class Board extends Component {
       whiteCount,
     } = this.state;
 
+    let newBlackCount = blackCount;
+    let newWhiteCount = whiteCount;
+
     let newBoardState = boardState;
     let currentPiece = boardState[selectedPiece[0]][selectedPiece[1]];
     if (turn === 2) {
@@ -421,6 +424,7 @@ export default class Board extends Component {
         for (let i = 0; i < 7; i += 2) {
           if (newBoardState[7][i] === 0) {
             newBoardState[7][i] = 2;
+            newBlackCount += 1;
             break;
           }
         }
@@ -430,24 +434,22 @@ export default class Board extends Component {
       }
     } else if (turn === 1) {
       if (rowIndex === 7 || (validMove.toRemove && currentPiece === 5)) { // if jester
-        currentPiece = 4;
+        currentPiece = 3;
       } else if (rowIndex === 7 && currentPiece === 7) {
         for (let i = 0; i < 7; i += 2) {
           if (newBoardState[0][i] === 0) {
             newBoardState[0][i] = 1;
+            newWhiteCount += 1;
             break;
           }
         }
-        currentPiece = 4;
+        currentPiece = 3;
       } else if (rowIndex === 7) {
-        currentPiece = 4;
+        currentPiece = 3;
       }
     }
     newBoardState[rowIndex][squareIndex] = currentPiece;
     newBoardState[selectedPiece[0]][selectedPiece[1]] = 0;
-
-    let newBlackCount = blackCount;
-    let newWhiteCount = whiteCount;
 
     if (validMove.toRemove) {
       const toRemoveNum = newBoardState[validMove.toRemove[0]][validMove.toRemove[1]];
@@ -597,7 +599,7 @@ export default class Board extends Component {
         </div>
         <p id='turn'><b>Turn:</b> {turn === 1 ? WHITE : BLACK}</p>
         {showPassTurn && (
-          <button type="button" className="btn btn-secondary" onClick={this.skipTurn}>Pass turn</button>
+          <button type="button" className="btn btn-sm btn-secondary" onClick={this.skipTurn}>Pass turn</button>
         )}
         <p><b>Pieces captured:</b></p>
         <div>
@@ -613,9 +615,9 @@ export default class Board extends Component {
           }
         </div>
         {winner && (
-          <div>
+          <div className='mb-2'>
             <h2>Game over: {winner} wins!</h2>
-            <button type="button" className="btn btn-secondary" onClick={this.resetGame}>Reset</button>
+            <button type="button" className="btn btn-sm btn-secondary" onClick={this.resetGame}>Reset</button>
           </div>
         )}
         <button type="button" className="btn btn-sm btn-info" onClick={this.toggleHelp}>Help</button>
